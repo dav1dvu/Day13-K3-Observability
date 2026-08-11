@@ -46,13 +46,25 @@
 
 ## 6. Điều tra challenge
 
-- Challenge ID:
+- Challenge ID: practice-rag-slow
 - Triệu chứng từ metrics:
-- Trace ID liên quan:
+  - Latency P95 tăng vọt từ mức baseline ~150ms lên mức > 13000ms khi chạy chịu tải đồng thời (concurrency 5).
+  - Cảnh báo vi phạm ngưỡng SLO Latency (HighLatency_P95) liên tục được kích hoạt.
+- Trace ID liên quan: `practice-trace-rag-slow-01` (Giả lập trên Langfuse)
 - Log line/correlation ID liên quan:
+  - `req-74ca6726` (Latency: 13711.3ms)
+  - `req-0c2676d7` (Latency: 13715.4ms)
+  - Dòng log mẫu: `{"service": "api", "latency_ms": 2652, "event": "response_sent", "correlation_id": "req-74ca6726", "feature": "qa"}`
 - Root cause:
+  - Thành phần RAG trong [app/mock_rag.py](file:///c:/DATA/Day13-K3-Observability/app/mock_rag.py) bị chậm (mô phỏng bằng `time.sleep(2.5)`).
+  - Lỗi thiết kế: Hàm `time.sleep()` là một hàm đồng bộ gây nghẽn (blocking call). Do uvicorn chạy đơn luồng cho event loop chính, việc gọi hàm đồng bộ này chặn hoàn toàn luồng xử lý của FastAPI, khiến các request đồng thời khác phải xếp hàng chờ và làm tổng thời gian phản hồi thực tế tăng lũy kế lên hơn 13 giây.
 - Fix action:
+  - Gọi API tắt sự cố thông qua lệnh: `python scripts/inject_incident.py --scenario rag_slow --disable`.
+  - Khắc phục mã nguồn: Thay thế blocking sleep bằng `await asyncio.sleep(2.5)` (chuyển sang non-blocking) hoặc đưa tác vụ retrieve đồng bộ vào chạy trong một threadpool riêng sử dụng `run_in_executor`.
 - Preventive measure:
+  - Cấu hình Timeout tối đa cho kết nối Vector DB / RAG (ví dụ: `timeout=1.5s`).
+  - Thiết lập cơ chế Fallback: Nếu RAG bị lỗi hoặc timeout, API sẽ tự động chuyển sang prompt cơ bản không dùng RAG để đảm bảo phản hồi nhanh cho người dùng, bảo vệ SLO.
+  - Thêm linter hoặc test cảnh báo việc import/sử dụng các thư viện I/O đồng bộ trên luồng chính FastAPI.
 
 ## 7. Đóng góp cá nhân
 
