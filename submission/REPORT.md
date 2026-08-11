@@ -6,11 +6,11 @@
 - Repository URL: `https://github.com/example/day13-k3-observability`
 - Commit SHA cuối: *(điền sau khi commit)*
 - Thành viên và vai trò:
-  - **Quỳnh**: API & Middleware Engineer
-  - **Biên**: Security Engineer
-  - **Nam**: Metrics & Dashboard Engineer
-  - **Đạt**: SRE & Alerts Engineer
-  - **Lan**: QA & Leader
+  - **Vũ Tú Quỳnh**: API & Middleware Engineer
+  - **Nguyễn Hoàng Biên**: Security Engineer
+  - **Nguyễn Ngọc Nam**: Metrics & Dashboard Engineer
+  - **Vũ Nguyễn Quốc Đạt**: SRE & Alerts Engineer
+  - **Trần Thị Ngọc Lan**: QA & Leader
 
 ## 2. Kết quả kỹ thuật
 
