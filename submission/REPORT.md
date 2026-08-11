@@ -2,7 +2,7 @@
 
 ## 1. Thông tin nhóm
 
-- Tên nhóm: Nhóm 5 (Lab Day 13)
+- Tên nhóm: Nhóm DMX (Lab Day 13)
 - Repository URL: `https://github.com/dav1dvu/K3-DAY13-2A202601199`
 - Commit SHA cuối: 0e78f84
 - Thành viên và vai trò:
