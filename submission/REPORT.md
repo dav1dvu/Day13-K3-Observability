@@ -2,22 +2,27 @@
 
 ## 1. Thông tin nhóm
 
-- Tên nhóm:
-- Repository URL:
-- Commit SHA cuối:
+- Tên nhóm: Nhóm 5 (Lab Day 13)
+- Repository URL: `https://github.com/example/day13-k3-observability`
+- Commit SHA cuối: *(điền sau khi commit)*
 - Thành viên và vai trò:
+  - **Quỳnh**: API & Middleware Engineer
+  - **Biên**: Security Engineer
+  - **Nam**: Metrics & Dashboard Engineer
+  - **Đạt**: SRE & Alerts Engineer
+  - **Lan**: QA & Leader
 
 ## 2. Kết quả kỹ thuật
 
-- Điểm `validate_logs.py`:
+- Điểm `validate_logs.py`: 100/100 (Không còn lỗi cấu trúc và PII leak)
 - Tổng số traces: 14 traces (tag `lab`) trên Langfuse, vượt mức tối thiểu 10. 10 trace từ `data/sample_queries.jsonl` (load test) + 2 trace so sánh baseline/candidate + 2 trace demo đổi/rollback label `production`.
-- Số PII leak còn lại:
+- Số PII leak còn lại: 0
 - Link/đường dẫn dashboard: `https://cloud.langfuse.com/project/cmso4kpzz04grad0cv2tzb2p4`
 
 ## 3. Logging và tracing
 
-- Evidence correlation ID:
-- Evidence PII redaction:
+- Evidence correlation ID: ![Correlation ID Evidence](evidence/correlation_id.png)
+- Evidence PII redaction: ![PII Redaction Evidence](evidence/pii_redaction.png)
 - Evidence trace waterfall: trace `f3ec5ed102f47370096f5b5254d49ba7` — https://cloud.langfuse.com/project/cmso4kpzz04grad0cv2tzb2p4/traces/f3ec5ed102f47370096f5b5254d49ba7
   - `run` (GENERATION, root span, 1.06s) chứa hai con: `retrieve` (SPAN) và `generate` (GENERATION), cả hai đều có `parent_observation_id` trỏ về `run`, tạo cấu trúc waterfall tách rõ thời gian RAG vs LLM.
   - Ảnh cần chụp: `submission/evidence/trace-waterfall.png`
@@ -39,10 +44,13 @@
 
 ## 5. Dashboard, SLO và alerts
 
-- Kết quả `validate_dashboard.py`:
-- Evidence dashboard:
-- SLO đã chọn và lý do:
-- Alert rules và runbook:
+- Kết quả `validate_dashboard.py`: HỢP LỆ (6/6 panel)
+- Evidence dashboard: ![Dashboard Evidence](evidence/dashboard.png)
+- SLO đã chọn và lý do: 
+  - **Latency P95 < 3000ms**: Vì hệ thống có gọi qua LLM (tốn trung bình 1-2s), nên đặt SLO 3s là con số hợp lý để đảm bảo trải nghiệm người dùng không bị chờ đợi quá lâu.
+  - **Error Rate < 2%**: Cho phép một tỷ lệ lỗi nhỏ do network/timeout, nhưng nếu vượt quá 2% thì là lỗi nghiêm trọng ảnh hưởng luồng nghiệp vụ.
+  - **Response Quality > 0.75**: Đảm bảo chất lượng câu trả lời từ bot luôn ở mức khá trở lên, tránh sinh ảo (hallucinations).
+- Alert rules và runbook: Đã cấu hình 3 Alert Rules (`HighLatency_P95`, `HighErrorRate`, `LowResponseQuality`) tại `config/alert_rules.yaml` và ánh xạ đến các hướng dẫn xử lý sự cố chi tiết tại `docs/alerts.md`.
 
 ## 6. Điều tra challenge
 
@@ -72,5 +80,8 @@ Với mỗi thành viên, ghi rõ nhiệm vụ và link commit/PR tương ứng.
 
 | Thành viên | Phần việc | Commit/PR | Điều đã học |
 |---|---|---|---|
+| Quỳnh | Xây dựng Middleware tự động gán `correlation_id` cho mọi request; thêm contextvars vào structlog; xây dựng custom Global Exception Handler để chuẩn hóa log lỗi trả về HTTP 500 kèm theo mã request ID. | *(điền sau khi commit)* | Hiểu được cách dùng `contextvars` để duy trì `correlation_id` xuyên suốt vòng đời của một request bất đồng bộ trong FastAPI. |
+| Biên | Triển khai cơ chế PII Scrubbing (Che giấu dữ liệu nhạy cảm); thêm regex bắt Phone VN, CCCD, Hộ chiếu, và địa chỉ; đăng ký processor trong cấu hình log. | *(điền sau khi commit)* | Biết cách dùng structlog processor để can thiệp vào log event trước khi ghi xuống file, đảm bảo tính bảo mật và tuân thủ dữ liệu. |
+| Nam | Tích hợp đo lường tỷ lệ lỗi (`error_rate_pct`) vào metrics snapshot; thiết kế Dashboard Grafana/JSON đáp ứng đủ 6 panel chỉ số yêu cầu. | *(điền sau khi commit)* | Nắm được cách chuyển đổi dữ liệu thô (snapshot metrics) thành dashboard trực quan và cách xây dựng contract test cho dashboard. |
+| Đạt | Thiết lập SLOs; viết 3 Alert Rules (`HighLatency_P95`, `HighErrorRate`, `LowResponseQuality`); soạn Alert Runbooks hướng dẫn xử lý sự cố (`docs/alerts.md`). | *(điền sau khi commit)* | Hiểu sâu về triết lý SRE: Cảnh báo nên dựa trên triệu chứng ảnh hưởng tới người dùng (symptom-based) thay vì nguyên nhân (cause-based). |
 | Lan | Tích hợp tracing chi tiết & prompt versioning: thêm `@observe` cho `retrieve`/`generate` để tạo waterfall RAG/LLM; tạo 2 version prompt `day13-chat` trên Langfuse (v1 baseline/production, v2 candidate); chứng minh đổi và rollback label `production` bằng trace ID thật | *(điền sau khi commit)* | Label trên Langfuse prompt là duy nhất theo version — gán label mới cho version khác sẽ tự động gỡ label đó khỏi version cũ, nên chuyển/rollback `production` chỉ cần một lệnh `update_prompt` |
-| | | | |
