@@ -49,7 +49,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         user_id_hash=hash_user_id(body.user_id),
         session_id=body.session_id,
         feature=body.feature,
-        model="fake-llm",
+        model=agent.model,
         env=os.getenv("APP_ENV", "dev"),
     )
 
@@ -91,7 +91,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
             "request_failed",
             service="api",
             error_type=error_type,
-            payload={"detail": str(exc), "message_preview": summarize_text(body.message)},
+            payload={"detail": scrub_text(str(exc)), "message_preview": summarize_text(body.message)},
         )
         raise HTTPException(status_code=500, detail=error_type) from exc
 
