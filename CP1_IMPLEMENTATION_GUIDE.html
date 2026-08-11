@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CP1 Implementation Guide - Member A</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --bg: #ffffff;
+            --bg-alt: #f9fafb;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1f2937;
+                --bg-alt: #111827;
+                --text: #f9fafb;
+                --text-light: #d1d5db;
+                --border: #374151;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background-color: var(--bg);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .subtitle {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+            padding-left: 1rem;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.8rem;
+            color: var(--text);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .status-success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .section {
+            background-color: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .checklist {
+            list-style: none;
+        }
+
+        .checklist li {
+            padding: 0.75rem 0;
+            padding-left: 2rem;
+            position: relative;
+        }
+
+        .checklist li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        code {
+            background-color: var(--bg-alt);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        pre {
+            background-color: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .flow-diagram {
+            background-color: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            text-align: center;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .file-path {
+            background-color: var(--bg-alt);
+            border-left: 3px solid var(--primary);
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0.3rem;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--bg-alt);
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--bg-alt);
+        }
+
+        .code-block {
+            background-color: var(--bg-alt);
+            border-left: 3px solid var(--primary);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.3rem;
+            overflow-x: auto;
+        }
+
+        .highlight {
+            background-color: rgba(59, 130, 246, 0.1);
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.3rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+
+        .success-banner {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid var(--success);
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✅ CP1 Implementation Guide</h1>
+            <p class="subtitle">Middleware, Correlation ID & PII Scrubbing - Member A</p>
+            <div class="status-badge status-success">✓ COMPLETED - 100/100</div>
+        </header>
+
+        <div class="success-banner">
+            <strong>🎉 Checkpoint 1 Completed!</strong><br>
+            All requirements met. Ready for CP2 (Metrics & Dashboard).
+        </div>
+
+        <!-- OVERVIEW -->
+        <section class="section">
+            <h2>📋 Overview</h2>
+            <p>CP1 focuses on establishing a robust observability foundation with three core components:</p>
+            <ul class="checklist">
+                <li><strong>Correlation ID:</strong> Track requests across the entire system</li>
+                <li><strong>Log Enrichment:</strong> Add context (user_id_hash, session_id, feature, model, env)</li>
+                <li><strong>PII Scrubbing:</strong> Prevent sensitive data leakage in logs</li>
+            </ul>
+        </section>
+
+        <!-- IMPLEMENTATION DETAILS -->
+        <h2>🛠️ Implementation Details</h2>
+
+        <!-- 1. Middleware -->
+        <section class="section">
+            <h3>1. CorrelationIdMiddleware (app/middleware.py)</h3>
+
+            <p><strong>Purpose:</strong> Generate/extract and propagate correlation ID across all requests</p>
+
+            <div class="file-path">app/middleware.py</div>
+
+            <p><strong>Key Features:</strong></p>
+            <ul class="checklist">
+                <li>Clear contextvars to prevent data leakage between requests</li>
+                <li>Extract correlation ID from <code>x-request-id</code> header</li>
+                <li>Generate new UUID if not provided: <code>req-&lt;8-char-hex&gt;</code></li>
+                <li>Bind to structlog contextvars for automatic inclusion in logs</li>
+                <li>Add correlation ID to response headers</li>
+            </ul>
+
+            <h4>Flow:</h4>
+            <div class="flow-diagram">Request
+    ↓
+Headers check: x-request-id?
+    ↓
+[No] → Generate: req-&lt;8-char-hex&gt;
+[Yes] → Use provided value
+    ↓
+bind_contextvars(correlation_id=...)
+    ↓
+Process request
+    ↓
+Add to response headers:
+  • x-request-id
+  • x-response-time-ms</div>
+
+            <h4>Example Usage:</h4>
+            <div class="code-block">
+<pre>// Client sends request with custom ID
+GET /chat
+Headers: x-request-id: req-custom01
+
+// API response includes ID
+Headers:
+  x-request-id: req-custom01
+  x-response-time-ms: 151
+
+// All logs for this request contain:
+"correlation_id": "req-custom01"</pre>
+            </div>
+        </section>
+
+        <!-- 2. Log Enrichment -->
+        <section class="section">
+            <h3>2. Log Enrichment (app/main.py - /chat endpoint)</h3>
+
+            <p><strong>Purpose:</strong> Add request context to all logs for better tracking and debugging</p>
+
+            <div class="file-path">app/main.py - chat() function</div>
+
+            <p><strong>Enriched Fields:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Source</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>user_id_hash</code></td>
+                        <td>SHA256(user_id)[:12]</td>
+                        <td>Track user without exposing ID</td>
+                    </tr>
+                    <tr>
+                        <td><code>session_id</code></td>
+                        <td>Request body</td>
+                        <td>Group requests in same session</td>
+                    </tr>
+                    <tr>
+                        <td><code>feature</code></td>
+                        <td>Request body</td>
+                        <td>Identify feature (qa, summary, etc.)</td>
+                    </tr>
+                    <tr>
+                        <td><code>model</code></td>
+                        <td>Config (fake-llm)</td>
+                        <td>Track model used</td>
+                    </tr>
+                    <tr>
+                        <td><code>env</code></td>
+                        <td>APP_ENV</td>
+                        <td>Environment (dev, prod, etc.)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Code:</h4>
+            <div class="code-block">
+<pre>bind_contextvars(
+    user_id_hash=hash_user_id(body.user_id),
+    session_id=body.session_id,
+    feature=body.feature,
+    model="fake-llm",
+    env=os.getenv("APP_ENV", "dev"),
+)</pre>
+            </div>
+
+            <h4>Result - Log Example:</h4>
+            <div class="code-block">
+<pre>{
+  "service": "api",
+  "event": "request_received",
+  "correlation_id": "req-custom01",
+  "user_id_hash": "2701c69e592d",
+  "session_id": "s_demo_01",
+  "feature": "qa",
+  "model": "fake-llm",
+  "env": "dev",
+  "ts": "2026-08-11T03:02:18.482806Z"
+}</pre>
+            </div>
+        </section>
+
+        <!-- 3. PII Scrubbing -->
+        <section class="section">
+            <h3>3. PII Scrubbing (app/logging_config.py)</h3>
+
+            <p><strong>Purpose:</strong> Automatically redact sensitive data before writing logs</p>
+
+            <div class="file-path">app/logging_config.py - configure_logging()</div>
+
+            <p><strong>Protected Patterns:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Pattern</th>
+                        <th>Replacement</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Email</td>
+                        <td><code>[\w\.-]+@[\w\.-]+\.\w+</code></td>
+                        <td><code>[REDACTED_email]</code></td>
+                    </tr>
+                    <tr>
+                        <td>Vietnamese Phone</td>
+                        <td><code>(?:\+84|0)(?:[ .-]?\d){9}</code></td>
+                        <td><code>[REDACTED_phone_vn]</code></td>
+                    </tr>
+                    <tr>
+                        <td>ID Card (CCCD)</td>
+                        <td><code>\d{12}</code></td>
+                        <td><code>[REDACTED_cccd]</code></td>
+                    </tr>
+                    <tr>
+                        <td>Credit Card</td>
+                        <td><code>\d{4}[- ]?\d{4}[- ]?\d{4}[- ]?\d{4}</code></td>
+                        <td><code>[REDACTED_credit_card]</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h4>Code Change:</h4>
+            <div class="code-block">
+<pre>structlog.configure(
+    processors=[
+        merge_contextvars,
+        structlog.processors.add_log_level,
+        structlog.processors.TimeStamper(fmt="iso", utc=True, key="ts"),
+        <span class="highlight">scrub_event,  # ← Enabled</span>
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        JsonlFileProcessor(),
+        structlog.processors.JSONRenderer(),
+    ],
+)</pre>
+            </div>
+
+            <h4>Example:</h4>
+            <div class="code-block">
+<pre>// Before scrubbing:
+"payload": {
+  "email": "user@example.com",
+  "phone": "090 123 4567"
+}
+
+// After scrubbing:
+"payload": {
+  "email": "[REDACTED_email]",
+  "phone": "[REDACTED_phone_vn]"
+}</pre>
+            </div>
+        </section>
+
+        <!-- 4. Exception Handler -->
+        <section class="section">
+            <h3>4. Global Exception Handler (app/main.py)</h3>
+
+            <p><strong>Purpose:</strong> Catch and log unhandled exceptions with proper context</p>
+
+            <div class="file-path">app/main.py - global_exception_handler()</div>
+
+            <p><strong>Features:</strong></p>
+            <ul class="checklist">
+                <li>Catch all unhandled exceptions</li>
+                <li>Log error with correlation_id, error_type, and details</li>
+                <li>Record error metrics</li>
+                <li>Return 500 response with correlation_id</li>
+            </ul>
+
+            <h4>Code:</h4>
+            <div class="code-block">
+<pre>@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    error_type = type(exc).__name__
+    record_error(error_type)
+    log.error(
+        "unhandled_exception",
+        service="api",
+        error_type=error_type,
+        payload={"detail": str(exc)},
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Internal server error",
+            "correlation_id": getattr(
+                request.state, "correlation_id", "unknown"
+            ),
+        },
+    )</pre>
+            </div>
+        </section>
+
+        <!-- VALIDATION RESULTS -->
+        <h2>✅ Validation Results</h2>
+        <section class="section">
+            <p><strong>Command:</strong></p>
+            <div class="code-block"><pre>python scripts/validate_logs.py</pre></div>
+
+            <p><strong>Results:</strong></p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total log records</td>
+                        <td>6</td>
+                        <td>✓</td>
+                    </tr>
+                    <tr>
+                        <td>Missing required fields</td>
+                        <td>0</td>
+                        <td>✓ PASSED</td>
+                    </tr>
+                    <tr>
+                        <td>Missing enrichment fields</td>
+                        <td>0</td>
+                        <td>✓ PASSED</td>
+                    </tr>
+                    <tr>
+                        <td>Unique correlation IDs</td>
+                        <td>3</td>
+                        <td>✓ PASSED</td>
+                    </tr>
+                    <tr>
+                        <td>PII leaks detected</td>
+                        <td>0</td>
+                        <td>✓ PASSED</td>
+                    </tr>
+                    <tr style="font-weight: bold;">
+                        <td>Final Score</td>
+                        <td>100/100</td>
+                        <td>✓ EXCELLENT</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- TESTING -->
+        <h2>🧪 Testing</h2>
+        <section class="section">
+            <h3>Run Tests:</h3>
+            <div class="code-block">
+<pre># Run validate_logs test
+python -m pytest tests/test_validate_logs.py -xvs
+
+# Run all tests
+python -m pytest -xvs</pre>
+            </div>
+
+            <h3>Manual Testing:</h3>
+            <div class="code-block">
+<pre>from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+# Test with custom correlation ID
+response = client.post(
+    "/chat",
+    headers={"x-request-id": "req-test1234"},
+    json={
+        "user_id": "u_team_01",
+        "session_id": "s_demo_01",
+        "feature": "qa",
+        "message": "Hello world"
+    }
+)
+
+assert response.status_code == 200
+assert response.json()["correlation_id"] == "req-test1234"</pre>
+            </div>
+        </section>
+
+        <!-- FILES MODIFIED -->
+        <h2>📝 Files Modified</h2>
+        <section class="section">
+            <table>
+                <thead>
+                    <tr>
+                        <th>File</th>
+                        <th>Changes</th>
+                        <th>Impact</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>app/middleware.py</code></td>
+                        <td>Correlation ID generation & binding</td>
+                        <td>All requests</td>
+                    </tr>
+                    <tr>
+                        <td><code>app/main.py</code></td>
+                        <td>Log enrichment + exception handler</td>
+                        <td>Chat endpoint + errors</td>
+                    </tr>
+                    <tr>
+                        <td><code>app/logging_config.py</code></td>
+                        <td>Enabled scrub_event processor</td>
+                        <td>All logs</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- KEY CONCEPTS -->
+        <h2>📚 Key Concepts</h2>
+        <section class="section">
+            <h3>Correlation ID Format</h3>
+            <p>Format: <code>req-&lt;8-char-hex&gt;</code></p>
+            <p>Examples:</p>
+            <ul>
+                <li><code>req-a1b2c3d4</code> (auto-generated)</li>
+                <li><code>req-custom01</code> (from client header)</li>
+            </ul>
+
+            <h3>Contextvar Binding</h3>
+            <p>Uses structlog's <code>contextvars</code> to automatically include bound variables in all logs within that request context.</p>
+            <div class="code-block">
+<pre>bind_contextvars(
+    correlation_id="req-xyz",
+    user_id_hash="abc123"
+)
+
+log.info("event")
+# Result: {"correlation_id": "req-xyz", "user_id_hash": "abc123", "event": "event"}</pre>
+            </div>
+
+            <h3>User ID Hashing</h3>
+            <p>Use SHA256 to hash user IDs for logging without exposing actual user identifiers:</p>
+            <div class="code-block">
+<pre>hash_user_id("u_team_01")
+# Result: "2701c69e592d" (first 12 chars of SHA256 hash)</pre>
+            </div>
+        </section>
+
+        <!-- NEXT STEPS -->
+        <h2>🚀 Next Steps</h2>
+        <section class="section">
+            <h3>CP2 - Metrics & Dashboard (Member C)</h3>
+            <ul class="checklist">
+                <li>Design dashboard with 6 metric groups</li>
+                <li>Implement error_rate_pct measurement</li>
+                <li>Add tracing with Langfuse</li>
+                <li>Add SLO thresholds to dashboard</li>
+            </ul>
+
+            <h3>CP3 - Challenge Investigation (Member E)</h3>
+            <ul class="checklist">
+                <li>Trigger incident scenario</li>
+                <li>Use correlation ID to trace request flow</li>
+                <li>Analyze metrics for anomalies</li>
+                <li>Review logs for root cause</li>
+            </ul>
+        </section>
+
+        <!-- TROUBLESHOOTING -->
+        <h2>❓ Troubleshooting</h2>
+        <section class="section">
+            <h3>Correlation ID always "MISSING"</h3>
+            <p><strong>Cause:</strong> Middleware not properly installed</p>
+            <p><strong>Fix:</strong> Ensure <code>app.add_middleware(CorrelationIdMiddleware)</code> is called</p>
+
+            <h3>Context variables not in logs</h3>
+            <p><strong>Cause:</strong> <code>bind_contextvars()</code> not called before logging</p>
+            <p><strong>Fix:</strong> Call <code>bind_contextvars()</code> early in request handling</p>
+
+            <h3>PII not being scrubbed</h3>
+            <p><strong>Cause:</strong> <code>scrub_event</code> processor not enabled</p>
+            <p><strong>Fix:</strong> Uncomment <code>scrub_event</code> in <code>configure_logging()</code></p>
+
+            <h3>Response time always 0ms</h3>
+            <p><strong>Cause:</strong> Time calculation error</p>
+            <p><strong>Fix:</strong> Use <code>time.perf_counter()</code> for accurate measurements</p>
+        </section>
+
+        <footer style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border); text-align: center; color: var(--text-light);">
+            <p>CP1 Implementation Guide | Member A | 2026-08-11</p>
+            <p>Status: ✅ Complete | Score: 100/100 | Ready for CP2</p>
+        </footer>
+    </div>
+</body>
+</html>
