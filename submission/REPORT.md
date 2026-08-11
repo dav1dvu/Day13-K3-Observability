@@ -3,8 +3,8 @@
 ## 1. Thông tin nhóm
 
 - Tên nhóm: Nhóm 5 (Lab Day 13)
-- Repository URL: `https://github.com/example/day13-k3-observability`
-- Commit SHA cuối: *(điền sau khi commit)*
+- Repository URL: `https://github.com/dav1dvu/K3-DAY13-2A202601199`
+- Commit SHA cuối: 0e78f84
 - Thành viên và vai trò:
   - **Vũ Tú Quỳnh**: API & Middleware Engineer
   - **Nguyễn Hoàng Biên**: Security Engineer
